@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Estate OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#2563eb;--text:#0f172a;--text2:#475569;--text3:#94a3b8;--bg:#f0f6ff;
+  --tag-auto:#dbeafe;--tag-ai:#ede9fe;--tag-api:#dcfce7;
+  --tag-webhook:#fef9c3;--tag-zapier:#fee2e2;--tag-make:#e0f2fe;
+  --connector:#93c5fd;
+}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);
+  background-image:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(147,197,253,.28) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(196,181,253,.2) 0%,transparent 55%);
+  min-height:100vh;color:var(--text);display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{padding:20px 24px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);opacity:.65}
+.title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.save-badge{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--text3);padding:4px 10px;border-radius:20px;border:1px solid rgba(148,197,253,.3);background:rgba(255,255,255,.6);backdrop-filter:blur(8px);transition:all .3s}
+.save-badge.saved{color:#15803d;background:#dcfce7;border-color:#bbf7d0}
+.btn{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;padding:7px 15px;border-radius:10px;cursor:pointer;border:1.5px solid rgba(148,197,253,.4);background:rgba(255,255,255,.75);backdrop-filter:blur(12px);color:var(--accent);transition:all .15s;white-space:nowrap}
+.btn:hover{background:white;box-shadow:0 4px 12px rgba(37,99,235,.12)}
+.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
+.btn.primary:hover{background:#1d4ed8;box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.btn.danger{color:#dc2626;border-color:#fca5a5}
+
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1;gap:0;padding:0 24px 24px;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:178px;flex-shrink:0;background:rgba(255,255,255,.78);backdrop-filter:blur(20px);border:1.5px solid rgba(148,197,253,.28);border-radius:14px;margin-top:14px;padding:14px 11px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 28px rgba(37,99,235,.05);align-self:flex-start;position:sticky;top:14px;max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(148,197,253,.3) transparent}
+.sidebar h3{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);padding-bottom:7px;border-bottom:1px solid rgba(148,197,253,.18)}
+.sb-sec{display:flex;flex-direction:column;gap:4px}
+.sb-sec label{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+.drag-tag{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 9px;border-radius:7px;cursor:grab;border:1.5px solid transparent;transition:transform .15s,box-shadow .15s;user-select:none;text-align:center}
+.drag-tag:active{cursor:grabbing}
+.drag-tag:hover{transform:scale(1.04);box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.drag-tag.dragging{opacity:.4;transform:scale(.95)}
+.drag-tag.automation{background:var(--tag-auto);color:#1d4ed8;border-color:#bfdbfe}
+.drag-tag.ai{background:var(--tag-ai);color:#6d28d9;border-color:#ddd6fe}
+.drag-tag.api{background:var(--tag-api);color:#15803d;border-color:#bbf7d0}
+.drag-tag.webhook{background:var(--tag-webhook);color:#92400e;border-color:#fde68a}
+.drag-tag.zapier{background:var(--tag-zapier);color:#dc2626;border-color:#fca5a5}
+.drag-tag.make{background:var(--tag-make);color:#0369a1;border-color:#bae6fd}
+.drag-tag.custom{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.sb-hint{font-size:10px;color:var(--text3);line-height:1.5;padding:7px;background:rgba(148,197,253,.07);border-radius:7px;border:1px dashed rgba(148,197,253,.28)}
+.custom-input{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--text2);background:rgba(255,255,255,.85);border:1px solid rgba(148,197,253,.22);border-radius:7px;padding:5px 8px;outline:none;width:100%;margin-bottom:3px}
+.custom-input:focus{border-color:rgba(37,99,235,.32);box-shadow:0 0 0 3px rgba(37,99,235,.06)}
+
+/* ── CONTENT ── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.tab-bar-wrap{padding:12px 0 0;overflow-x:auto;scrollbar-width:none}
+.tab-bar-wrap::-webkit-scrollbar{display:none}
+.tab-bar{display:flex;gap:4px;min-width:max-content}
+.tab-btn{font-family:'Space Grotesk',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.04em;padding:8px 14px;border:1.5px solid rgba(255,255,255,.7);border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;background:rgba(255,255,255,.38);color:var(--text2);backdrop-filter:blur(12px);transition:all .15s;white-space:nowrap;position:relative;top:1px}
+.tab-btn:hover{background:rgba(255,255,255,.65);color:var(--accent)}
+.tab-btn.active{background:rgba(255,255,255,.9);color:var(--accent);font-weight:600;border-color:rgba(148,197,253,.5);box-shadow:0 -3px 10px rgba(37,99,235,.05)}
+.tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;position:relative;top:-1px}
+.d-sky{background:#38bdf8}.d-violet{background:#a78bfa}.d-blue{background:#60a5fa}.d-teal{background:#2dd4bf}.d-amber{background:#fbbf24}.d-emerald{background:#34d399}.d-rose{background:#fb7185}.d-indigo{background:#818cf8}.d-gold{background:#f59e0b}
+
+.main-card{background:rgba(255,255,255,.82);backdrop-filter:blur(24px);border:1.5px solid rgba(148,197,253,.38);border-radius:0 14px 14px 14px;box-shadow:0 14px 40px rgba(37,99,235,.06);padding:24px 28px;flex:1;overflow:hidden;display:flex;flex-direction:column}
+.tab-panel{display:none}.tab-panel.active{display:flex;flex-direction:column;flex:1}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.tab-panel.active{animation:fadeIn .18s ease}
+.flow-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;flex-shrink:0}
+.flow-scroll{overflow-y:auto;flex:1;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(148,197,253,.35) transparent}
+.flow-scroll::-webkit-scrollbar{width:4px}
+.flow-scroll::-webkit-scrollbar-thumb{background:rgba(148,197,253,.35);border-radius:2px}
+.flow-grid{display:flex;flex-direction:column;align-items:center;gap:0}
+.node-wrap{display:flex;flex-direction:column;align-items:center;width:100%}
+
+/* ── NODE ── */
+.node{position:relative;width:min(500px,100%);background:white;border-radius:13px;border:1.5px solid rgba(148,197,253,.3);box-shadow:0 3px 16px rgba(37,99,235,.05),0 1px 3px rgba(37,99,235,.03),inset 0 1px 0 rgba(255,255,255,.9);overflow:visible;transition:box-shadow .2s,transform .2s}
+.node::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);pointer-events:none;border-radius:13px 13px 0 0}
+.node:hover{box-shadow:0 7px 24px rgba(37,99,235,.1),inset 0 1px 0 rgba(255,255,255,.9);transform:translateY(-1px)}
+.node-header{padding:10px 13px 8px;display:flex;align-items:center;gap:8px;border-radius:11px 11px 0 0}
+.node-icon{width:25px;height:25px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:text;outline:none;border:1.5px solid transparent}
+.node-icon[contenteditable="true"]:focus{border-color:rgba(37,99,235,.2)}
+.node-label{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--text);flex:1;border:none;outline:none;background:transparent;cursor:text;border-radius:4px;padding:1px 4px;min-width:40px}
+.node-label:focus{background:rgba(37,99,235,.04);box-shadow:0 0 0 1.5px rgba(37,99,235,.18)}
+.node-label:empty::before{content:attr(data-placeholder);color:var(--text3);font-style:italic;font-weight:400}
+.node-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:20px;background:rgba(148,197,253,.1);color:var(--text3);border:none;outline:none;white-space:nowrap;font-family:'Space Grotesk',sans-serif;cursor:text;min-width:40px;text-align:center}
+.node-badge:focus{box-shadow:0 0 0 2px rgba(37,99,235,.18)}
+.node-subs{padding:0 13px 5px;display:flex;flex-wrap:wrap;gap:3px}
+.sub-pill{font-size:10.5px;font-weight:500;color:var(--text2);background:rgba(148,197,253,.08);border-radius:5px;padding:2px 7px;border:1px solid rgba(148,197,253,.15);cursor:text;outline:none;min-width:24px}
+.sub-pill:focus{background:rgba(37,99,235,.05);box-shadow:0 0 0 1.5px rgba(37,99,235,.18)}
+.sub-pill:empty::before{content:'edit…';color:var(--text3);font-style:italic}
+
+/* ── AUTO ROW ── */
+.auto-row{border-top:1px solid rgba(148,197,253,.13);padding:6px 9px;display:flex;gap:4px;align-items:center;flex-wrap:wrap;background:rgba(248,251,255,.65);border-radius:0 0 11px 11px;min-height:34px}
+.auto-row.dov{background:rgba(147,197,253,.14);border-top-color:rgba(37,99,235,.28)}
+.atag{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:20px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;flex-shrink:0;display:inline-flex;align-items:center;gap:3px}
+.atag:hover{opacity:.8}
+.atag .rx{font-size:10px;opacity:.55;cursor:pointer;transition:opacity .1s;line-height:1}
+.atag .rx:hover{opacity:1}
+.atag.automation{background:var(--tag-auto);color:#1d4ed8;border-color:#bfdbfe}
+.atag.ai{background:var(--tag-ai);color:#6d28d9;border-color:#ddd6fe}
+.atag.api{background:var(--tag-api);color:#15803d;border-color:#bbf7d0}
+.atag.webhook{background:var(--tag-webhook);color:#92400e;border-color:#fde68a}
+.atag.zapier{background:var(--tag-zapier);color:#dc2626;border-color:#fca5a5}
+.atag.make{background:var(--tag-make);color:#0369a1;border-color:#bae6fd}
+.atag.custom{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.cmd-input{flex:1;min-width:110px;font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--text2);background:rgba(255,255,255,.82);border:1px solid rgba(148,197,253,.2);border-radius:7px;padding:4px 8px;outline:none;transition:border-color .15s,box-shadow .15s}
+.cmd-input::placeholder{color:var(--text3);font-style:italic}
+.cmd-input:focus{border-color:rgba(37,99,235,.3);box-shadow:0 0 0 3px rgba(37,99,235,.06)}
+.drop-hint{font-size:9.5px;color:var(--text3);font-style:italic;padding:0 2px;white-space:nowrap;pointer-events:none}
+
+/* ── NODE COLORS ── */
+.node.start .node-header{background:linear-gradient(135deg,#e0f2fe,#f0f9ff)}
+.node.start .node-icon{background:#bae6fd;color:#0369a1}
+.node.action .node-header{background:linear-gradient(135deg,#ede9fe,#faf5ff)}
+.node.action .node-icon{background:#ddd6fe;color:#6d28d9}
+.node.split-node .node-header{background:linear-gradient(135deg,#fef9c3,#fefce8)}
+.node.split-node .node-icon{background:#fef08a;color:#a16207}
+.node.end .node-header{background:linear-gradient(135deg,#dcfce7,#f0fdf4)}
+.node.end .node-icon{background:#bbf7d0;color:#15803d}
+.node.tool .node-header{background:linear-gradient(135deg,#fee2e2,#fff5f5)}
+.node.tool .node-icon{background:#fecaca;color:#dc2626}
+
+/* ── CONNECTORS ── */
+.conn{display:flex;flex-direction:column;align-items:center;padding:3px 0}
+.conn-line{width:2px;height:18px;background:linear-gradient(to bottom,rgba(147,197,253,.45),rgba(147,197,253,.75));border-radius:1px}
+.conn-arr{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid rgba(147,197,253,.7)}
+.split-row{display:flex;gap:16px;width:min(720px,100%);justify-content:center;align-items:flex-start}
+.split-br{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;min-width:0}
+.split-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.h-bar{height:2px;background:rgba(147,197,253,.4);border-radius:1px;width:100%;margin:2px 0}
+.vline{width:2px;background:rgba(147,197,253,.45);border-radius:1px;margin:0 auto}
+.flow-div{width:75%;height:1px;background:rgba(148,197,253,.18);margin:12px auto 8px}
+.sec-lbl{font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin:0 0 4px;text-align:center}
+
+/* ── LIST CARDS (flows) ── */
+.list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:13px}
+.lcard{background:white;border-radius:13px;border:1.5px solid rgba(148,197,253,.25);box-shadow:0 3px 14px rgba(37,99,235,.04);overflow:hidden;transition:box-shadow .2s,transform .2s}
+.lcard:hover{box-shadow:0 7px 22px rgba(37,99,235,.09);transform:translateY(-1px)}
+.lcard-hdr{padding:12px 14px 8px;border-bottom:1px solid rgba(148,197,253,.09);display:flex;align-items:center;gap:9px}
+.lcard-num{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent);opacity:.17;line-height:1;width:24px;flex-shrink:0}
+.lcard-title{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;color:var(--text);outline:none;cursor:text;min-width:30px;border-radius:3px;padding:1px 3px}
+.lcard-title:focus{background:rgba(37,99,235,.04)}
+.lcard-meta{font-size:10.5px;color:var(--text3);margin-top:2px;outline:none;cursor:text;min-width:20px}
+.lcard-meta:focus{background:rgba(37,99,235,.03)}
+.lcard-body{padding:8px 14px 6px}
+.li{font-size:11px;color:var(--text2);padding:3px 0;border-bottom:1px solid rgba(148,197,253,.07);display:flex;align-items:center;gap:4px}
+.li:last-child{border-bottom:none}
+.li-dot{width:4px;height:4px;border-radius:50%;background:var(--connector);flex-shrink:0}
+.li-txt{outline:none;cursor:text;flex:1;min-width:20px;border-radius:3px;padding:1px 3px}
+.li-txt:focus{background:rgba(37,99,235,.04)}
+.lcard-auto{padding:6px 9px;background:rgba(248,251,255,.65);border-top:1px solid rgba(148,197,253,.09);display:flex;gap:4px;align-items:center;flex-wrap:wrap;min-height:32px}
+
+/* ══════════════════════════════════
+   AI STACK TAB SPECIFIC STYLES
+══════════════════════════════════ */
+
+/* Stats bar */
+.stats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;flex-shrink:0}
+.stat-pill{background:white;border:1.5px solid rgba(148,197,253,.28);border-radius:12px;padding:10px 14px;text-align:center;flex:1;min-width:90px;box-shadow:0 2px 8px rgba(37,99,235,.04)}
+.stat-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent);line-height:1}
+.stat-lbl{font-size:9.5px;color:var(--text3);margin-top:2px;line-height:1.3;font-weight:500}
+
+/* Stack builder panel */
+.stack-layout{display:flex;gap:14px;flex:1;overflow:hidden;min-height:0}
+.stack-left{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.stack-right{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(148,197,253,.3) transparent}
+
+/* Tool browser controls */
+.tool-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
+.search-field{flex:1;min-width:140px;font-family:'Space Grotesk',sans-serif;font-size:12px;color:var(--text2);background:white;border:1.5px solid rgba(148,197,253,.3);border-radius:9px;padding:7px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.search-field:focus{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.06)}
+.search-field::placeholder{color:var(--text3)}
+.cat-filters{display:flex;gap:4px;flex-wrap:wrap}
+.cf-btn{font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:5px 11px;border-radius:20px;cursor:pointer;border:1.5px solid rgba(148,197,253,.3);background:rgba(255,255,255,.7);color:var(--text3);transition:all .15s;white-space:nowrap}
+.cf-btn:hover{border-color:rgba(37,99,235,.35);color:var(--accent);background:white}
+.cf-btn.active{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.35);color:var(--accent)}
+
+/* Tool cards (AI Stack) */
+.tools-grid-inner{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.tool-card{background:white;border-radius:12px;border:1.5px solid rgba(148,197,253,.25);overflow:hidden;transition:all .18s;cursor:pointer;position:relative}
+.tool-card:hover{border-color:rgba(37,99,235,.35);box-shadow:0 6px 20px rgba(37,99,235,.1);transform:translateY(-1px)}
+.tool-card.in-stack{border-color:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.15)}
+.tool-card.in-stack .tc-add-btn{background:#22c55e;color:white;border-color:#22c55e}
+.tc-top{padding:12px 12px 8px;display:flex;gap:9px;align-items:flex-start}
+.tc-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.tc-meta{flex:1;min-width:0}
+.tc-name{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:1px}
+.tc-tagline{font-size:10.5px;color:var(--text3);line-height:1.35}
+.tc-tags{padding:0 12px 8px;display:flex;flex-wrap:wrap;gap:4px}
+.tc-tag{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:.04em}
+.tc-tag.nar{background:#fff3e0;color:#e65100}
+.tc-tag.free{background:#e8f5e9;color:#1b5e20}
+.tc-tag.paid{background:#e3f2fd;color:#0d47a1}
+.tc-tag.reddit{background:#fce4ec;color:#880e4f}
+.tc-tag.ai{background:#ede7f6;color:#311b92}
+.tc-tag.hot{background:#fbe9e7;color:#bf360c}
+.tc-expand{border-top:1px solid rgba(148,197,253,.12);padding:8px 12px;font-size:11px;color:var(--text2);line-height:1.55;display:none}
+.tc-expand.open{display:block}
+.tc-uses{margin-top:8px}
+.tc-uses-title{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:5px}
+.tc-use{display:flex;gap:6px;align-items:flex-start;margin-bottom:4px;font-size:10.5px;color:var(--text2);line-height:1.45}
+.tc-use-dot{width:4px;height:4px;border-radius:50%;background:var(--connector);margin-top:5px;flex-shrink:0}
+.tc-price{margin-top:8px;background:rgba(248,251,255,.9);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--text2);font-weight:500;border:1px solid rgba(148,197,253,.15)}
+.tc-bottom{padding:6px 12px 10px;display:flex;gap:6px;align-items:center}
+.tc-add-btn{font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05em;padding:5px 12px;border-radius:20px;cursor:pointer;border:1.5px solid rgba(148,197,253,.35);background:rgba(255,255,255,.8);color:var(--accent);transition:all .15s;flex-shrink:0}
+.tc-add-btn:hover{background:var(--accent);color:white;border-color:var(--accent)}
+.tc-toggle{font-size:10px;color:var(--text3);cursor:pointer;margin-left:auto;transition:color .15s}
+.tc-toggle:hover{color:var(--accent)}
+.cat-label-row{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;margin-top:16px;padding-bottom:5px;border-bottom:1px solid rgba(148,197,253,.15)}
+.cat-label-row:first-child{margin-top:0}
+.cat-desc-row{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;margin-top:-4px}
+
+/* Stack panel (right) */
+.stack-panel{background:white;border-radius:13px;border:1.5px solid rgba(148,197,253,.28);box-shadow:0 4px 16px rgba(37,99,235,.05);overflow:hidden;flex-shrink:0}
+.sp-hdr{padding:12px 14px 10px;border-bottom:1px solid rgba(148,197,253,.12);display:flex;align-items:center;gap:6px}
+.sp-title{font-family:'Syne',sans-serif;font-size:11.5px;font-weight:700;color:var(--text);flex:1}
+.sp-count{font-size:10px;font-weight:700;background:rgba(37,99,235,.1);color:var(--accent);padding:2px 7px;border-radius:20px}
+.sp-body{padding:8px 12px}
+.sp-empty{font-size:11px;color:var(--text3);font-style:italic;padding:8px 0;text-align:center}
+.sp-item{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(148,197,253,.08)}
+.sp-item:last-child{border-bottom:none}
+.sp-item-icon{font-size:14px;width:22px;text-align:center;flex-shrink:0}
+.sp-item-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-item-price{font-size:10px;color:var(--text3);flex-shrink:0;max-width:80px;text-align:right;line-height:1.3}
+.sp-item-rm{font-size:13px;color:var(--text3);cursor:pointer;flex-shrink:0;transition:color .15s;line-height:1}
+.sp-item-rm:hover{color:#dc2626}
+.sp-total-box{margin:10px 12px 12px;background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(124,58,237,.05));border-radius:10px;padding:12px 14px;border:1.5px solid rgba(37,99,235,.12)}
+.sp-total-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.sp-total-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);line-height:1}
+.sp-total-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.sp-clear{width:100%;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;padding:6px;border-radius:8px;cursor:pointer;border:1.5px solid rgba(148,197,253,.28);background:rgba(255,255,255,.7);color:var(--text3);margin:0 12px 10px;transition:all .15s;width:calc(100% - 24px)}
+.sp-clear:hover{border-color:#fca5a5;color:#dc2626;background:white}
+
+/* ── EXPORT OVERLAY ── */
+#exp-ov{display:none;position:fixed;inset:0;z-index:999;background:rgba(15,23,42,.48);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+#exp-ov.show{display:flex}
+.exp-box{background:white;border-radius:18px;padding:26px 30px;box-shadow:0 24px 60px rgba(15,23,42,.18);display:flex;flex-direction:column;gap:13px;align-items:center;max-width:340px;width:90%}
+.exp-box h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+.exp-box p{font-size:12px;color:var(--text2);text-align:center;line-height:1.55}
+.exp-prog{width:100%;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden}
+.exp-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;width:0%}
+</style>
+</head>
+<body>
+
+<div id="exp-ov">
+  <div class="exp-box">
+    <div style="font-size:28px">🖼️</div>
+    <h2>Exporting PNG…</h2>
+    <p>Rendering the active flow to a high-res image.</p>
+    <div class="exp-prog"><div class="exp-bar" id="exp-bar"></div></div>
+    <p id="exp-status" style="font-size:10.5px;color:var(--text3)">Starting…</p>
+  </div>
+</div>
+
+<header>
+  <div>
+    <div class="brand">Real Estate OS</div>
+    <div class="title">Automation Flow Builder</div>
+  </div>
+  <div class="hright">
+    <div class="save-badge saved" id="save-badge">All changes saved ✓</div>
+    <button class="btn primary" onclick="exportPNG()">⬇ Export PNG</button>
+    <button class="btn danger" onclick="clearAll()">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-body">
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <h3>Action Tags</h3>
+  <p class="sb-hint">Drag any tag onto a node's bottom bar to assign it.</p>
+  <div class="sb-sec">
+    <label>Core</label>
+    <div class="drag-tag automation" draggable="true" data-tag="automation" data-label="Automation">⚙ Automation</div>
+    <div class="drag-tag ai" draggable="true" data-tag="ai" data-label="AI">✦ AI</div>
+    <div class="drag-tag api" draggable="true" data-tag="api" data-label="API">⇌ API</div>
+  </div>
+  <div class="sb-sec">
+    <label>Platforms</label>
+    <div class="drag-tag webhook" draggable="true" data-tag="webhook" data-label="Webhook">⚡ Webhook</div>
+    <div class="drag-tag zapier" draggable="true" data-tag="zapier" data-label="Zapier">⚡ Zapier</div>
+    <div class="drag-tag make" draggable="true" data-tag="make" data-label="Make">◎ Make</div>
+  </div>
+  <div class="sb-sec">
+    <label>Custom tag</label>
+    <input id="ctag-in" class="custom-input" placeholder="Tag name…">
+    <button class="btn" style="font-size:11px;padding:5px 8px;width:100%" onclick="addCustomTag()">+ Add</button>
+    <div id="ctag-list" style="display:flex;flex-direction:column;gap:4px;margin-top:3px"></div>
+  </div>
+</div>
+
+<!-- ══ CONTENT ══ -->
+<div class="content">
+<div class="tab-bar-wrap">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(0)"><span class="tab-dot d-gold"></span>AI Stack</button>
+    <button class="tab-btn" onclick="switchTab(1)"><span class="tab-dot d-sky"></span>Leads</button>
+    <button class="tab-btn" onclick="switchTab(2)"><span class="tab-dot d-violet"></span>Seller Contract</button>
+    <button class="tab-btn" onclick="switchTab(3)"><span class="tab-dot d-blue"></span>Buyer Contract</button>
+    <button class="tab-btn" onclick="switchTab(4)"><span class="tab-dot d-teal"></span>List Docs</button>
+    <button class="tab-btn" onclick="switchTab(5)"><span class="tab-dot d-amber"></span>N8N Tools</button>
+    <button class="tab-btn" onclick="switchTab(6)"><span class="tab-dot d-emerald"></span>Client Follow-Up</button>
+    <button class="tab-btn" onclick="switchTab(7)"><span class="tab-dot d-rose"></span>Seller MKT Data</button>
+    <button class="tab-btn" onclick="switchTab(8)"><span class="tab-dot d-indigo"></span>Schedule</button>
+  </div>
+</div>
+<div class="main-card" id="main-card">
+
+<!-- ══════════════════════════════════════════════════
+     TAB 0: AI STACK BUILDER
+══════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-0">
+  <div class="flow-title">AI & Software Stack Builder</div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-pill"><div class="stat-num">79%</div><div class="stat-lbl">Use eSignature</div></div>
+    <div class="stat-pill"><div class="stat-num">75%</div><div class="stat-lbl">Use social media</div></div>
+    <div class="stat-pill"><div class="stat-num">41%</div><div class="stat-lbl">Use AI tools</div></div>
+    <div class="stat-pill"><div class="stat-num">58%</div><div class="stat-lbl">ChatGPT is #1 AI</div></div>
+    <div class="stat-pill"><div class="stat-num">$250+</div><div class="stat-lbl">Avg monthly spend</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="tool-controls">
+    <input class="search-field" id="tool-search" placeholder="Search tools…" oninput="renderTools()">
+    <div class="cat-filters" id="cat-filters">
+      <button class="cf-btn active" data-cat="all" onclick="setCat('all',this)">All</button>
+      <button class="cf-btn" data-cat="crm" onclick="setCat('crm',this)">CRM</button>
+      <button class="cf-btn" data-cat="ai" onclick="setCat('ai',this)">AI Tools</button>
+      <button class="cf-btn" data-cat="transaction" onclick="setCat('transaction',this)">Transactions</button>
+      <button class="cf-btn" data-cat="marketing" onclick="setCat('marketing',this)">Marketing</button>
+      <button class="cf-btn" data-cat="leads" onclick="setCat('leads',this)">Leads</button>
+      <button class="cf-btn" data-cat="tours" onclick="setCat('tours',this)">Tours</button>
+      <button class="cf-btn" data-cat="productivity" onclick="setCat('productivity',this)">Productivity</button>
+    </div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="stack-layout">
+    <!-- Tool browser -->
+    <div class="stack-left">
+      <div class="flow-scroll" id="tools-container"></div>
+    </div>
+
+    <!-- Stack panel -->
+    <div class="stack-right">
+      <div class="stack-panel">
+        <div class="sp-hdr">
+          <div class="sp-title">My Stack</div>
+          <div class="sp-count" id="sp-count">0</div>
+        </div>
+        <div class="sp-body" id="sp-body">
+          <div class="sp-empty" id="sp-empty">Add tools from the left to build your stack.</div>
+        </div>
+        <div class="sp-total-box">
+          <div class="sp-total-label">Est. Monthly Total</div>
+          <div class="sp-total-num" id="sp-total">$0</div>
+          <div class="sp-total-sub" id="sp-total-sub">No tools selected yet</div>
+        </div>
+        <button class="sp-clear" onclick="clearStack()">Clear stack</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 1: LEADS ══ -->
+<div class="tab-panel" id="tab-1">
+<div class="flow-title">Leads Flow</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="l1"><div class="node-header"><div class="node-icon" contenteditable="true">📥</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Lead In</div><input class="node-badge" value="TRIGGER"></div><div class="auto-row" data-nid="l1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node action" data-id="l2"><div class="node-header"><div class="node-icon" contenteditable="true">✉️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Msg / Email Gavin to react</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="l2"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node action" data-id="l3"><div class="node-header"><div class="node-icon" contenteditable="true">📋</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Asana Gavin flow</div><input class="node-badge" value="TASK"></div><div class="auto-row" data-nid="l3"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node split-node" data-id="l4"><div class="node-header"><div class="node-icon" contenteditable="true">⏱️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Day 3 — enters flow (TXT / Email)</div><input class="node-badge" value="SPLIT"></div><div class="auto-row" data-nid="l4"></div></div></div>
+  <div class="h-bar" style="width:min(580px,100%);margin:4px auto 0"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="vline" style="height:12px;margin-bottom:4px"></div><div class="split-lbl">Branch A — Holiday</div><div class="node action" data-id="l5" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🎉</div><div class="node-label" contenteditable="true" data-placeholder="Label…">w/ Holiday</div><input class="node-badge" value="FLOW"></div><div class="auto-row" data-nid="l5"></div></div></div>
+    <div class="split-br"><div class="vline" style="height:12px;margin-bottom:4px"></div><div class="split-lbl">Branch B — Lender</div><div class="node action" data-id="l6" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏦</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Lender Flow</div><input class="node-badge" value="FLOW"></div><div class="auto-row" data-nid="l6"></div></div></div>
+  </div>
+  <div class="conn" style="margin-top:10px"><div class="conn-line"></div><div class="conn-arr"></div></div>
+  <div class="sec-lbl">Call-in Sequence</div><div class="flow-div"></div>
+  <div class="node-wrap"><div class="node split-node" data-id="l7"><div class="node-header"><div class="node-icon" contenteditable="true">📞</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Call in w/ TXT</div><input class="node-badge" value="SPLIT"></div><div class="auto-row" data-nid="l7"></div></div></div>
+  <div class="h-bar" style="width:min(580px,100%);margin:4px auto 0"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="vline" style="height:10px;margin-bottom:4px"></div><div class="split-lbl">No answer</div>
+      <div class="node tool" data-id="l8" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📨</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Voice mail</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="l8"></div></div>
+      <div class="vline" style="height:8px;margin:3px auto"></div>
+      <div class="node end" data-id="l9" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💬</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT to Gavin</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="l9"></div></div>
+    </div>
+    <div class="split-br"><div class="vline" style="height:10px;margin-bottom:4px"></div><div class="split-lbl">Answers</div>
+      <div class="node end" data-id="l10" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">✅</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Respond (call)</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="l10"></div></div>
+      <div class="vline" style="height:8px;margin:3px auto"></div>
+      <div class="node action" data-id="l11" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💬</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT to Gavin</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="l11"></div></div>
+      <div class="vline" style="height:8px;margin:3px auto"></div>
+      <div class="node end" data-id="l12" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🚀</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Enter flow — Holiday / Lender</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="l12"></div></div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ══ TAB 2: SELLER CONTRACT ══ -->
+<div class="tab-panel" id="tab-2">
+<div class="flow-title">Seller Contract Flow</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="sc1"><div class="node-header"><div class="node-icon" contenteditable="true">📄</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Contract Box</div><input class="node-badge" value="TRIGGER"></div><div class="auto-row" data-nid="sc1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="split-row">
+    <div class="split-br"><div class="node action" data-id="sc2" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">✉️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT to Seller</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="sc2"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="sc3" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📧</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Adobe Send</div><input class="node-badge" value="TOOL"></div><div class="auto-row" data-nid="sc3"></div></div></div>
+  </div>
+  <div class="vline" style="height:10px;margin:3px auto"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="node action" data-id="sc4" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🎞️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">GIF to Seller</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc4"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="sc5" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔗</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Bound</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc5"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="sc6" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏢</div><div class="node-label" contenteditable="true" data-placeholder="Label…">GIF to Agent</div><input class="node-badge" value="ACTION"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">TXT Abt Utilities</span></div><div class="auto-row" data-nid="sc6"></div></div></div>
+  </div>
+  <div class="vline" style="height:10px;margin:3px auto"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="split-lbl">Seller side</div>
+      <div class="node action" data-id="sc7" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏠</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Seller</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc7"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc8" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔔</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT Abt Inspection</div><input class="node-badge" value="NOTIFY"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">Generic</span><span class="sub-pill" contenteditable="true">App</span><span class="sub-pill" contenteditable="true">Title Co.</span><span class="sub-pill" contenteditable="true">Trans Utilities</span></div><div class="auto-row" data-nid="sc8"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc9" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📱</div><div class="node-label" contenteditable="true" data-placeholder="Label…">App TXT</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="sc9"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc10" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🚶</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Final Walk TXT</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="sc10"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node end" data-id="sc11" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔑</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Day of Close TXT</div><input class="node-badge" value="END"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">Keys</span><span class="sub-pill" contenteditable="true">Utilities</span><span class="sub-pill" contenteditable="true">Broom Swept</span><span class="sub-pill" contenteditable="true">Cancel Ins.</span></div><div class="auto-row" data-nid="sc11"></div></div>
+    </div>
+    <div class="split-br"><div class="split-lbl">Agent side</div>
+      <div class="node action" data-id="sc12" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">👤</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Agent</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc12"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc13" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💲</div><div class="node-label" contenteditable="true" data-placeholder="Label…">E$ TXT</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="sc13"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc14" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📅</div><div class="node-label" contenteditable="true" data-placeholder="Label…">App Set — Due Date</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc14"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="sc15" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔙</div><div class="node-label" contenteditable="true" data-placeholder="Label…">App Back</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="sc15"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node end" data-id="sc16" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🚶</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Final Walk</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="sc16"></div></div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ══ TAB 3: BUYER CONTRACT ══ -->
+<div class="tab-panel" id="tab-3">
+<div class="flow-title">Buyer Contract Flow</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="bc1"><div class="node-header"><div class="node-icon" contenteditable="true">📄</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Contract Box</div><input class="node-badge" value="TRIGGER"></div><div class="auto-row" data-nid="bc1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="split-row">
+    <div class="split-br"><div class="node action" data-id="bc2" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">✉️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT to Buyer</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="bc2"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="bc3" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📧</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Adobe Send</div><input class="node-badge" value="TOOL"></div><div class="auto-row" data-nid="bc3"></div></div></div>
+  </div>
+  <div class="vline" style="height:10px;margin:3px auto"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="node action" data-id="bc4" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🎞️</div><div class="node-label" contenteditable="true" data-placeholder="Label…">GIF to Buyer</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc4"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="bc5" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔗</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Back Bound</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc5"></div></div></div>
+    <div class="split-br"><div class="node action" data-id="bc6" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏢</div><div class="node-label" contenteditable="true" data-placeholder="Label…">GIF to Agent</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc6"></div></div></div>
+  </div>
+  <div class="vline" style="height:10px;margin:3px auto"></div>
+  <div class="split-row">
+    <div class="split-br"><div class="split-lbl">Main flow</div>
+      <div class="node action" data-id="bc7" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📋</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Copy to Buyer w/ Email</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc7"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc8" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💲</div><div class="node-label" contenteditable="true" data-placeholder="Label…">E$ Reminder</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="bc8"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc9" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔍</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT Insp. Set</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="bc9"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc10" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📅</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT App Set</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="bc10"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc11" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔌</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Utilities TXT + Post Office</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc11"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node end" data-id="bc12" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🚶</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Final Walk TXT</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="bc12"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc13" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📌</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Title Email</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc13"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node end" data-id="bc14" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔁</div><div class="node-label" contenteditable="true" data-placeholder="Label…">2 Week Follow-Up</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="bc14"></div></div>
+    </div>
+    <div class="split-br"><div class="split-lbl">Parallel branch</div>
+      <div class="node action" data-id="bc15" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📤</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Copy Lend</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc15"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc16" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📁</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Buyer Docs + Citeck + Due</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc16"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc17" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💬</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT to List Agent Info</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="bc17"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node action" data-id="bc18" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🔍</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Order Inspection</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="bc18"></div></div>
+      <div class="vline" style="height:6px;margin:3px auto"></div>
+      <div class="node end" data-id="bc19" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🧑‍💼</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT — Seller Agent + Buyer</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="bc19"></div></div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ══ TAB 4: LIST DOCS ══ -->
+<div class="tab-panel" id="tab-4">
+<div class="flow-title">List Docs Flow</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="ld1"><div class="node-header"><div class="node-icon" contenteditable="true">📂</div><div class="node-label" contenteditable="true" data-placeholder="Label…">List Docs</div><input class="node-badge" value="TRIGGER"></div><div class="auto-row" data-nid="ld1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="split-row">
+    <div class="split-br"><div class="split-lbl">Seller side</div>
+      <div class="node action" data-id="ld2" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏠</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Seller</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="ld2"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="ld3" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📸</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Next Day Photo TXT</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="ld3"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="ld4" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🏡</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Live MLS</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="ld4"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node action" data-id="ld5" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🤝</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Broker Bay TXT</div><input class="node-badge" value="NOTIFY"></div><div class="auto-row" data-nid="ld5"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node end" data-id="ld6" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">💬</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Feedback TXT</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="ld6"></div></div>
+    </div>
+    <div class="split-br"><div class="split-lbl">Setup side</div>
+      <div class="node action" data-id="ld7" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">🎨</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Set Tanner</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="ld7"></div></div>
+      <div class="vline" style="height:7px;margin:3px auto"></div>
+      <div class="node end" data-id="ld8" style="width:100%"><div class="node-header"><div class="node-icon" contenteditable="true">📋</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Asana</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="ld8"></div></div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ══ TAB 5: N8N ══ -->
+<div class="tab-panel" id="tab-5">
+<div class="flow-title">N8N — AI Tool Ideas</div>
+<div class="flow-scroll"><div class="list-grid">
+  <div class="lcard" data-id="n1"><div class="lcard-hdr"><div class="lcard-num">1</div><div><div class="lcard-title" contenteditable="true">AI Real Estate Agent</div><div class="lcard-meta" contenteditable="true">$249 · Sam Yassine</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Not sure about the call feature yet</span></div></div><div class="lcard-auto auto-row" data-nid="n1"></div></div>
+  <div class="lcard" data-id="n2"><div class="lcard-hdr"><div class="lcard-num">2</div><div><div class="lcard-title" contenteditable="true">RE Chat Box w/ AI</div><div class="lcard-meta" contenteditable="true">FREE · Genzi</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Property matching + auto call</span></div></div><div class="lcard-auto auto-row" data-nid="n2"></div></div>
+  <div class="lcard" data-id="n3"><div class="lcard-hdr"><div class="lcard-num">3</div><div><div class="lcard-title" contenteditable="true">Auto Property MKT Report</div><div class="lcard-meta" contenteditable="true">FREE · Yaron Been</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Bright data + N8N</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Extract → feedback / test</span></div></div><div class="lcard-auto auto-row" data-nid="n3"></div></div>
+  <div class="lcard" data-id="n4"><div class="lcard-hdr"><div class="lcard-num">4</div><div><div class="lcard-title" contenteditable="true">Automate AI Phone Booking</div><div class="lcard-meta" contenteditable="true">$169 · Sam Yassine</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">AI-powered phone booking flow</span></div></div><div class="lcard-auto auto-row" data-nid="n4"></div></div>
+</div></div>
+</div>
+
+<!-- ══ TAB 6: CLIENT FOLLOW-UP ══ -->
+<div class="tab-panel" id="tab-6">
+<div class="flow-title">Client / People Follow-Up</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="cf1"><div class="node-header"><div class="node-icon" contenteditable="true">👥</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Clients</div><input class="node-badge" value="SEGMENT"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">Need to CAT contacts</span></div><div class="auto-row" data-nid="cf1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node action" data-id="cf2"><div class="node-header"><div class="node-icon" contenteditable="true">📅</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Set # TXTs per Year — AI</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="cf2"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node action" data-id="cf3"><div class="node-header"><div class="node-icon" contenteditable="true">🎉</div><div class="node-label" contenteditable="true" data-placeholder="Label…">3 GIF Holidays</div><input class="node-badge" value="ACTION"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">Thanksgiving</span><span class="sub-pill" contenteditable="true">Christmas</span><span class="sub-pill" contenteditable="true">New Year</span></div><div class="auto-row" data-nid="cf3"></div></div></div>
+  <div class="flow-div"></div>
+  <div class="node-wrap"><div class="node split-node" data-id="cf4"><div class="node-header"><div class="node-icon" contenteditable="true">🔧</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Vendors</div><input class="node-badge" value="SEGMENT"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">2x per year</span></div><div class="auto-row" data-nid="cf4"></div></div></div>
+  <div class="flow-div"></div>
+  <div class="node-wrap"><div class="node action" data-id="cf5"><div class="node-header"><div class="node-icon" contenteditable="true">💬</div><div class="node-label" contenteditable="true" data-placeholder="Label…">TXT —</div><input class="node-badge" value="ACTION"></div><div class="auto-row" data-nid="cf5"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node end" data-id="cf6"><div class="node-header"><div class="node-icon" contenteditable="true">📣</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Mass MKT TXT Message</div><input class="node-badge" value="END"></div><div class="auto-row" data-nid="cf6"></div></div></div>
+</div></div>
+</div>
+
+<!-- ══ TAB 7: SELLER MKT DATA ══ -->
+<div class="tab-panel" id="tab-7">
+<div class="flow-title">Seller MKT Data</div>
+<div class="flow-scroll"><div class="flow-grid">
+  <div class="node-wrap"><div class="node start" data-id="sm1"><div class="node-header"><div class="node-icon" contenteditable="true">📊</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Every Other Week Email</div><input class="node-badge" value="CADENCE"></div><div class="node-subs"><span class="sub-pill" contenteditable="true">MKT Trends</span><span class="sub-pill" contenteditable="true">Pend / Sale / Sold</span><span class="sub-pill" contenteditable="true">Showings</span><span class="sub-pill" contenteditable="true">In/Abt Interest Rates</span></div><div class="auto-row" data-nid="sm1"></div></div><div class="conn"><div class="conn-line"></div><div class="conn-arr"></div></div></div>
+  <div class="node-wrap"><div class="node end" data-id="sm2"><div class="node-header"><div class="node-icon" contenteditable="true">🛑</div><div class="node-label" contenteditable="true" data-placeholder="Label…">Stop when sold on MLS</div><input class="node-badge" value="CONDITION"></div><div class="auto-row" data-nid="sm2"></div></div></div>
+</div></div>
+</div>
+
+<!-- ══ TAB 8: SCHEDULE ══ -->
+<div class="tab-panel" id="tab-8">
+<div class="flow-title">Schedule Automation</div>
+<div class="flow-scroll"><div class="list-grid">
+  <div class="lcard" data-id="sh1"><div class="lcard-hdr"><div class="lcard-num">1</div><div><div class="lcard-title" contenteditable="true">Set in Cal</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Auto reminder — morning of (or etc.)</span></div></div><div class="lcard-auto auto-row" data-nid="sh1"></div></div>
+  <div class="lcard" data-id="sh2"><div class="lcard-hdr"><div class="lcard-num">2</div><div><div class="lcard-title" contenteditable="true">Voice Memo → AI Email</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Check calendar</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">They confirm</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Puts in cal w/ reminder</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Email / TXT to confirm</span></div></div><div class="lcard-auto auto-row" data-nid="sh2"></div></div>
+  <div class="lcard" data-id="sh3"><div class="lcard-hdr"><div class="lcard-num">3</div><div><div class="lcard-title" contenteditable="true">Email in w/ Contract</div></div></div><div class="lcard-body"><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Auto email back to confirm</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">Moved to a contract folder</span></div><div class="li"><div class="li-dot"></div><span class="li-txt" contenteditable="true">TXT msg + reminder?</span></div></div><div class="lcard-auto auto-row" data-nid="sh3"></div></div>
+</div></div>
+</div>
+
+</div><!-- end main-card -->
+</div><!-- end content -->
+</div><!-- end app-body -->
+
+<script>
+/* ════════════════════════════════════════
+   TOOLS DATA
+════════════════════════════════════════ */
+const TOOLS = [
+  {cat:"crm",catLabel:"CRM — Client Relationship Management",catDesc:"NAR ranks CRM as one of the top 2 tools producing the highest quality leads.",name:"Follow Up Boss",tagline:"Most popular agent CRM — Reddit r/realtors #1 pick",icon:"👑",iconBg:"#FFF8E1",tags:["reddit","paid"],price:"From $58/mo",priceNum:58,desc:"The gold standard CRM for agents and teams. Central hub connecting 250+ integrations so every lead from Zillow, Realtor.com, and Facebook flows in automatically. Built-in texting, email, AI call transcripts, and Action Plans for automated multi-touch follow-up campaigns.",uses:["Auto-capture leads from Zillow, Realtor.com, Facebook","Automated multi-touch sequences — email + text + call tasks","Track every conversation in one unified timeline","Monitor website activity to see when leads are searching"]},
+  {cat:"crm",name:"Go High Level (GHL)",tagline:"All-in-one CRM + marketing — replaces 5+ tools",icon:"🚀",iconBg:"#E8F5E9",tags:["hot","paid"],price:"$97–$297/mo",priceNum:97,desc:"The most feature-rich marketing CRM for agents. Replaces email platform, SMS, landing page builder, appointment scheduler, and review manager. Ships with pre-built real estate snapshot templates.",uses:["CRM pipeline with drag-and-drop deal stages","Automated SMS + email + voicemail drop sequences","Build listing landing pages and lead capture funnels","Reputation management — auto-request Google reviews"]},
+  {cat:"crm",name:"kvCORE / BoldTrail",tagline:"Brokerage platform — often free through your brokerage",icon:"🏢",iconBg:"#E3F2FD",tags:["free","paid"],price:"Often FREE via brokerage",priceNum:0,desc:"One of the most widely used brokerage platforms in the US — many agents get it at no extra cost. Combines CRM with IDX website, behavioral automation, and AI lead scoring.",uses:["IDX website generates organic leads automatically","AI lead scoring shows which contacts are most ready to convert","Automated behavior-based drip campaigns","Smart number tracks which marketing channels produce leads"]},
+  {cat:"crm",name:"Wise Agent",tagline:"Affordable CRM with 24/7 phone support",icon:"💼",iconBg:"#F3E5F5",tags:["reddit","paid"],price:"From $49/mo",priceNum:49,desc:"Consistently rated one of the most user-friendly and affordable real estate CRMs. Covers contact management, landing pages, drip campaigns, transaction management, and print marketing.",uses:["Manage contacts, leads, and transactions from one dashboard","Email + print drip campaigns to your database","Create landing pages for Facebook and Google ads","Referral tree tracking"]},
+  {cat:"crm",name:"LionDesk",tagline:"Beginner CRM with power dialer — best for new agents",icon:"🌱",iconBg:"#E8F5E9",tags:["paid"],price:"From $39/mo",priceNum:39,desc:"A great starting point for newer agents. Includes a power dialer that connects agents to 4x more leads per hour, bulk texting, and pre-built drip campaigns.",uses:["Power dialer — 4x more leads per hour","Bulk texting campaigns to your entire database","Pre-built email + text drip sequences","Auto-import leads from Zillow, Trulia, Realtor.com"]},
+
+  {cat:"ai",catLabel:"AI Tools",catDesc:"AI adoption among Realtors hit 41% in 2025. ChatGPT leads at 58% of AI users, Gemini 20%, Copilot 15%.",name:"ChatGPT (OpenAI)",tagline:"#1 AI tool among Realtors — used by 58% of AI-adopting agents",icon:"🤖",iconBg:"#EDE7F6",tags:["nar","ai","paid"],price:"Free — Plus $20/mo",priceNum:20,desc:"The #1 AI tool used by real estate agents per NAR's 2025 Technology Survey. Write property descriptions, draft client emails, generate social captions, summarize contracts, and roleplay objection handling.",uses:["Write SEO-optimized property descriptions in seconds","Draft personalized client emails and follow-up messages","Generate social media captions and content ideas","Summarize long contracts and inspection reports","Roleplay listing presentations to sharpen your pitch"]},
+  {cat:"ai",name:"Google Gemini",tagline:"2nd most-used AI — integrated into Gmail and Google Docs",icon:"✨",iconBg:"#E8F5E9",tags:["nar","ai","free"],price:"Free — Advanced $19.99/mo",priceNum:0,desc:"The second most-used AI tool among Realtors (20%). Integrates natively with Gmail, Google Docs, Drive, and Calendar. Draft emails in Gmail and pull real-time Google search results.",uses:["Draft and reply to client emails directly inside Gmail","Summarize documents and contracts inside Google Drive","Research market conditions with real-time search","Generate content for Google Business Profile"]},
+  {cat:"ai",name:"Claude (Anthropic)",tagline:"Best for long-form writing, document analysis, nuanced copy",icon:"🧠",iconBg:"#EDE7F6",tags:["ai","paid"],price:"Free — Pro $20/mo",priceNum:20,desc:"Increasingly used for nuanced writing, long document analysis, and research synthesis. Handles very long documents in a single conversation. Use alongside ChatGPT — ChatGPT for speed and data, Claude for deep analysis.",uses:["Analyze full-length purchase agreements and disclosures","Write highly personalized listing descriptions and agent bios","Create long-form neighborhood guides for your website","Draft complex client communication requiring careful tone"]},
+  {cat:"ai",name:"Microsoft Copilot",tagline:"Built into Outlook, Word, Excel, Teams",icon:"💻",iconBg:"#E3F2FD",tags:["nar","ai","paid"],price:"M365 $6–22/mo + Copilot $30/mo",priceNum:30,desc:"Built into Word, Excel, Outlook, Teams, and PowerPoint for Microsoft 365 subscribers. Drafts emails in Outlook, summarizes meeting transcripts in Teams, formats reports in Word.",uses:["Draft and summarize emails in Outlook","Summarize Teams meeting recordings with action items","Format reports in Word from simple prompts","Analyze commission tracking spreadsheets in Excel"]},
+
+  {cat:"transaction",catLabel:"Transaction Management & E-Signature",catDesc:"eSignature is the most widely used technology among Realtors at 79% per NAR 2025.",name:"DocuSign",tagline:"Industry standard e-signature — official NAR partner",icon:"✍️",iconBg:"#FFF8E1",tags:["nar","paid"],price:"From $15/mo — RE plan ~$45/mo",priceNum:45,desc:"The most recognized e-signature tool in real estate and official NAR partner. Trusted by agents, lenders, title companies, and attorneys. NAR members get special pricing.",uses:["Send legally binding e-signature requests on any contract","Create reusable templates for frequently used forms","Track document status in real time","Collect signatures from all parties simultaneously"]},
+  {cat:"transaction",name:"Dotloop",tagline:"End-to-end transaction management — processes 50% of US deals",icon:"🔄",iconBg:"#E3F2FD",tags:["paid"],price:"$31.99/mo (agent)",priceNum:32,desc:"The most real estate-specific transaction platform. Organizes each deal into a 'loop' — a collaborative workspace with all documents, parties, tasks, and signatures. Owned by Zillow.",uses:["Manage every transaction in a dedicated 'loop'","Create, fill, and send forms with built-in e-signature","Collaborate with clients, co-agents, and TCs in real time","Track compliance checklists with broker visibility"]},
+  {cat:"transaction",name:"zipForms",tagline:"Official NAR forms platform — often free with Realtor membership",icon:"📋",iconBg:"#FFF8E1",tags:["nar","free"],price:"Often FREE through Realtor association",priceNum:0,desc:"Official forms software of NAR, often provided free through state and local Realtor associations. Houses your state's official real estate forms, auto-fills client data, and allows digital signing.",uses:["Access all official state Realtor association forms","Auto-fill client and property info across documents","Send forms for digital signature","Integrate with DocuSign, SkySlope, and other platforms"]},
+
+  {cat:"marketing",catLabel:"Marketing & Content Creation",catDesc:"75% of agents use social media as a core tool per NAR 2025.",name:"Canva",tagline:"Most widely used design tool by real estate agents",icon:"🎨",iconBg:"#FCE4EC",tags:["hot","free"],price:"Free — Pro $15/mo",priceNum:0,desc:"The most widely used marketing design tool among agents. Create Just Listed/Just Sold posts, property flyers, listing presentations, email headers, and open house materials with no design background.",uses:["Design Just Listed, Just Sold, and open house social graphics","Create property flyers, postcards, and door hangers","Build listing presentation decks and buyer guide PDFs","Maintain Brand Kit for consistent marketing","Schedule posts directly to social media from Canva"]},
+  {cat:"marketing",name:"BombBomb",tagline:"Video email — track who opens your personal videos",icon:"🎥",iconBg:"#E3F2FD",tags:["paid"],price:"From $33/mo",priceNum:33,desc:"Record, send, and track personalized video emails directly from Gmail or Outlook. In an industry built on trust, video email creates a personal connection text can't match.",uses:["Send personalized video follow-ups after showings","Record quick listing update videos instead of long emails","Send birthday and anniversary videos to your database","Track who opened your video emails and when"]},
+  {cat:"marketing",name:"Hootsuite / Buffer",tagline:"Social media scheduling across all platforms",icon:"📱",iconBg:"#FFF8E1",tags:["paid"],price:"Buffer $6/mo — Hootsuite $199/mo",priceNum:6,desc:"Schedule and manage content across Facebook, Instagram, LinkedIn, and X from a single calendar. Many solo agents prefer Buffer ($6/mo) for the same core functionality at a fraction of the cost.",uses:["Schedule a full month of posts in one sitting","Manage all comments and DMs from one unified inbox","Track which content drives the most engagement","Bulk schedule posts across all platforms"]},
+
+  {cat:"leads",catLabel:"Lead Generation & MLS Data",catDesc:"Social Media + CRM were the top 2 tools producing the highest quality leads in 2025 per NAR.",name:"Zillow Premier Agent",tagline:"Largest US buyer lead source — 231M monthly visitors",icon:"🏠",iconBg:"#E3F2FD",tags:["paid"],price:"$300–$1,500+/mo per zip",priceNum:300,desc:"Zillow is where the buyers are — 231M+ monthly visitors. Premier Agent lets agents buy geo-targeted leads with a free built-in CRM to manage them.",uses:["Purchase geo-targeted buyer leads in specific zip codes","Receive instant lead alerts with buyer search history","Manage Zillow leads with automated follow-up texts","Monitor and respond to listing reviews"]},
+  {cat:"leads",name:"RPR (Realtors Property Resource)",tagline:"Free NAR member benefit — powerful market data and CMA tool",icon:"🎁",iconBg:"#E8F5E9",tags:["nar","free"],price:"FREE — included in NAR dues",priceNum:0,desc:"A completely free comprehensive data platform included with NAR membership that most agents dramatically underutilize. Pull detailed property reports, CMAs, neighborhood data, flood maps, school ratings.",uses:["Build CMA reports from live MLS data","Full property profiles with tax history, flood zone, schools","Generate shareable neighborhood and market trend reports","Access distressed property data for investor clients"]},
+  {cat:"leads",name:"PropStream",tagline:"Off-market lead data — 153M property records with 165+ filters",icon:"🔍",iconBg:"#E3F2FD",tags:["paid"],price:"From $99/mo",priceNum:99,desc:"Find highly targeted off-market leads. Identifies pre-foreclosures, tax liens, vacant properties, absentee owners, and equity-rich homeowners likely to sell.",uses:["Search 153M+ property records with 165+ filters","Identify pre-foreclosures and tax lien properties","Skip trace to find phone/email for property owners","Generate targeted seller lead lists for your farm area"]},
+
+  {cat:"tours",catLabel:"Virtual Tours & Property Presentation",catDesc:"52% of agents use drone photography and video per NAR 2025. Professional photography and 3D tours are no longer optional.",name:"Matterport",tagline:"Industry standard for 3D virtual tours worldwide",icon:"🏡",iconBg:"#E3F2FD",tags:["nar","paid"],price:"Camera $699–$3,400 + hosting $9.99/mo",priceNum:10,desc:"The most recognized 3D tour platform in real estate. Creates immersive, navigable 3D walkthroughs that embed on listings, websites, and Zillow. Listings with Matterport tours receive more views.",uses:["Create fully navigable 3D walkthroughs for every listing","Embed tours on Zillow, Realtor.com, and your website","Allow out-of-state buyers to tour remotely","Generate dollhouse floor plan views and measurements"]},
+  {cat:"tours",name:"Virtual Staging AI",tagline:"AI-powered digital staging — skip $2,000+ physical staging",icon:"🛋️",iconBg:"#FBE9E7",tags:["ai","paid"],price:"From $20/mo",priceNum:20,desc:"Use AI to digitally furnish empty rooms in listing photos — transforming vacant properties without the $1,500–$3,000+ cost of physical staging. Delivered within 24–48 hours.",uses:["Transform empty rooms into fully furnished listing images","Show buyers the potential of vacant properties","Test different furniture styles for the same room","Digitally declutter and refresh occupied home photos"]},
+
+  {cat:"productivity",catLabel:"Productivity, Operations & Integrations",catDesc:"These tools keep day-to-day operations running — task management, file storage, automation, and team communication.",name:"Asana",tagline:"Project and task management for deals, listings, and marketing",icon:"📋",iconBg:"#E3F2FD",tags:["paid","free"],price:"Free (basic) — Starter $10.99/mo",priceNum:0,desc:"Track every listing, transaction, marketing campaign, and team task. Kanban boards, Gantt timelines, automated workflows, and custom dashboards.",uses:["Track every listing from lead to close with checklists","Automate recurring task creation for new listings","Assign tasks to team members and track completion","Monitor all active deals on a portfolio dashboard"]},
+  {cat:"productivity",name:"Zapier",tagline:"No-code automation that connects your entire tech stack",icon:"⚡",iconBg:"#FFF8E1",tags:["hot","free"],price:"Free (limited) — Starter $19.99/mo",priceNum:0,desc:"The glue that connects your entire tech stack without writing code. When a Zillow lead comes in, Zapier can automatically add them to Follow Up Boss, send a welcome text, create an Asana task, and notify you.",uses:["Auto-add leads from any source into your CRM","Trigger follow-up texts when a lead fills out a form","Sync contacts between CRM, email platform, and calendar","Auto-create tasks when a new deal stage is reached"]},
+  {cat:"productivity",name:"Box",tagline:"Secure cloud file storage — includes e-signature",icon:"📦",iconBg:"#F3E5F5",tags:["paid","free"],price:"Free (10GB) — Business $20/user/mo",priceNum:0,desc:"Enterprise-grade cloud storage for business document management, external collaboration, and compliance. Store transaction documents by client and property, share with clients and attorneys.",uses:["Organize all transaction documents in client-named folders","Share listing documents and contracts securely","Collect e-signatures via Box Sign — no DocuSign needed","Access all files from any device from anywhere"]},
+];
+
+/* ════════════════════════════════════════
+   STACK STATE
+════════════════════════════════════════ */
+let myStack = [];
+let activeCat = 'all';
+
+function parsePriceNum(t){
+  return t.priceNum || 0;
+}
+
+function addToStack(idx){
+  if(myStack.includes(idx)) { removeFromStack(idx); return; }
+  myStack.push(idx);
+  updateStack();
+  renderTools();
+  scheduleSave();
+}
+function removeFromStack(idx){
+  myStack = myStack.filter(i=>i!==idx);
+  updateStack();
+  renderTools();
+  scheduleSave();
+}
+function clearStack(){
+  myStack=[];
+  updateStack();
+  renderTools();
+  scheduleSave();
+}
+function updateStack(){
+  const body = document.getElementById('sp-body');
+  const empty = document.getElementById('sp-empty');
+  const count = document.getElementById('sp-count');
+  const total = document.getElementById('sp-total');
+  const sub = document.getElementById('sp-total-sub');
+  count.textContent = myStack.length;
+  if(!myStack.length){
+    body.innerHTML='<div class="sp-empty">Add tools from the left to build your stack.</div>';
+    total.textContent='$0'; sub.textContent='No tools selected yet'; return;
+  }
+  let html='';
+  let sum=0;
+  let freeCount=0;
+  myStack.forEach(i=>{
+    const t=TOOLS[i];
+    const p=parsePriceNum(t);
+    sum+=p;
+    if(p===0) freeCount++;
+    html+=`<div class="sp-item">
+      <div class="sp-item-icon">${t.icon}</div>
+      <div class="sp-item-name">${t.name}</div>
+      <div class="sp-item-price">${p===0?'Free':('$'+p+'/mo')}</div>
+      <div class="sp-item-rm" onclick="removeFromStack(${i})" title="Remove">✕</div>
+    </div>`;
+  });
+  body.innerHTML=html;
+  total.textContent = sum===0 ? '$0' : '$'+sum+'/mo';
+  const paid = myStack.length - freeCount;
+  sub.textContent = `${myStack.length} tool${myStack.length!==1?'s':''} · ${paid} paid · ${freeCount} free`;
+}
+
+/* ════════════════════════════════════════
+   TOOL RENDERER
+════════════════════════════════════════ */
+function setCat(c,btn){
+  activeCat=c;
+  document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTools();
+}
+function renderTools(){
+  const q = document.getElementById('tool-search').value.toLowerCase().trim();
+  const container = document.getElementById('tools-container');
+  let filtered = TOOLS.map((t,i)=>({...t,idx:i}));
+  if(activeCat!=='all') filtered=filtered.filter(t=>t.cat===activeCat);
+  if(q) filtered=filtered.filter(t=>
+    t.name.toLowerCase().includes(q)||
+    t.tagline.toLowerCase().includes(q)||
+    t.desc.toLowerCase().includes(q)
+  );
+  if(!filtered.length){ container.innerHTML='<div style="font-size:12px;color:var(--text3);padding:24px;text-align:center">No tools match that search.</div>'; return; }
+
+  let html='';
+  let lastCat=null;
+  let gridOpen=false;
+
+  filtered.forEach(t=>{
+    if(t.catLabel && t.catLabel!==lastCat){
+      if(gridOpen){html+='</div>';gridOpen=false;}
+      lastCat=t.catLabel;
+      html+=`<div class="cat-label-row">${t.catLabel}</div>`;
+      if(t.catDesc) html+=`<div class="cat-desc-row">${t.catDesc}</div>`;
+    }
+    if(!gridOpen){html+='<div class="tools-grid-inner">';gridOpen=true;}
+    const inStack=myStack.includes(t.idx);
+    const tagHtml=(t.tags||[]).map(tg=>`<span class="tc-tag ${tg}">${{nar:'NAR',free:'Free',paid:'Paid',reddit:'Reddit',ai:'AI',hot:'Popular'}[tg]||tg}</span>`).join('');
+    html+=`<div class="tool-card${inStack?' in-stack':''}" id="tc-${t.idx}">
+      <div class="tc-top">
+        <div class="tc-icon" style="background:${t.iconBg}">${t.icon}</div>
+        <div class="tc-meta">
+          <div class="tc-name">${t.name}</div>
+          <div class="tc-tagline">${t.tagline}</div>
+        </div>
+      </div>
+      <div class="tc-tags">${tagHtml}</div>
+      <div class="tc-expand" id="exp-${t.idx}">
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px">${t.desc}</div>
+        <div class="tc-uses">
+          <div class="tc-uses-title">How agents use it</div>
+          ${t.uses.map(u=>`<div class="tc-use"><div class="tc-use-dot"></div>${u}</div>`).join('')}
+        </div>
+        <div class="tc-price">💲 ${t.price}</div>
+      </div>
+      <div class="tc-bottom">
+        <button class="tc-add-btn" onclick="addToStack(${t.idx})">${inStack?'✓ In Stack':'+ Add to Stack'}</button>
+        <div class="tc-toggle" onclick="toggleExpand(${t.idx})">${document.getElementById('exp-'+t.idx)?.classList.contains('open')?'▲ Less':'▼ Details'}</div>
+      </div>
+    </div>`;
+  });
+  if(gridOpen) html+='</div>';
+  container.innerHTML=html;
+  // Re-open any expanded cards
+  expandedCards.forEach(i=>{
+    const el=document.getElementById('exp-'+i);
+    if(el){el.classList.add('open');const tog=el.closest('.tool-card')?.querySelector('.tc-toggle');if(tog)tog.textContent='▲ Less';}
+  });
+}
+const expandedCards=new Set();
+function toggleExpand(i){
+  if(expandedCards.has(i)) expandedCards.delete(i);
+  else expandedCards.add(i);
+  renderTools();
+}
+
+/* ════════════════════════════════════════
+   FLOW TABS — DRAG + SAVE
+════════════════════════════════════════ */
+const SK='re_os_v5';
+let saveTimer=null;
+let customTags=[];
+
+function switchTab(i){
+  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
+  document.querySelectorAll('.tab-panel').forEach((p,j)=>p.classList.toggle('active',i===j));
+}
+function initDrag(){
+  document.querySelectorAll('.drag-tag').forEach(el=>attachDragTag(el));
+  document.addEventListener('dragover',e=>{const r=e.target.closest('.auto-row');if(r){e.preventDefault();r.classList.add('dov');e.dataTransfer.dropEffect='copy';}});
+  document.addEventListener('dragleave',e=>{const r=e.target.closest('.auto-row');if(r)r.classList.remove('dov');});
+  document.addEventListener('drop',e=>{
+    const r=e.target.closest('.auto-row');if(!r)return;
+    r.classList.remove('dov');e.preventDefault();
+    let d;try{d=JSON.parse(e.dataTransfer.getData('text/plain'));}catch{return;}
+    if(!d)return;
+    addTagToRow(r,d.type,d.label);scheduleSave();
+  });
+}
+function attachDragTag(el){
+  el.addEventListener('dragstart',e=>{
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed='copy';
+    e.dataTransfer.setData('text/plain',JSON.stringify({type:el.dataset.tag,label:el.dataset.label}));
+  });
+  el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+}
+function addTagToRow(row,type,label){
+  if(row.querySelector(`.atag[data-type="${type}"]`))return;
+  row.querySelector('.drop-hint')?.remove();
+  const inp=row.querySelector('.cmd-input');if(inp)inp.remove();
+  const tag=document.createElement('span');
+  tag.className=`atag ${type}`;tag.dataset.type=type;
+  tag.innerHTML=`${label}<span class="rx" onclick="rmTag(this)">✕</span>`;
+  row.appendChild(tag);
+  const ni=inp||mkInput();row.appendChild(ni);
+  scheduleSave();
+}
+function rmTag(x){x.parentElement.remove();scheduleSave();}
+function mkInput(){
+  const i=document.createElement('input');i.className='cmd-input';
+  i.placeholder='Command, tool, or API call…';i.addEventListener('input',scheduleSave);return i;
+}
+function addCustomTag(){
+  const inp=document.getElementById('ctag-in');const v=inp.value.trim();if(!v)return;
+  const slug=v.toLowerCase().replace(/\s+/g,'-');
+  if(customTags.includes(slug)){inp.value='';return;}
+  customTags.push(slug);renderCustomTags();inp.value='';scheduleSave();
+}
+document.getElementById('ctag-in').addEventListener('keydown',e=>{if(e.key==='Enter')addCustomTag();});
+function renderCustomTags(){
+  const list=document.getElementById('ctag-list');list.innerHTML='';
+  customTags.forEach(slug=>{
+    const el=document.createElement('div');el.className='drag-tag custom';
+    el.style.cssText='background:#f1f5f9;color:#475569;border-color:#cbd5e1';
+    el.setAttribute('draggable','true');el.dataset.tag=slug;el.dataset.label=slug;
+    el.textContent='⬡ '+slug;attachDragTag(el);list.appendChild(el);
+  });
+}
+function initRows(){
+  document.querySelectorAll('.auto-row').forEach(row=>{
+    if(!row.querySelector('.cmd-input')&&!row.querySelector('.atag')){
+      const hint=document.createElement('span');hint.className='drop-hint';hint.textContent='← drop tag';
+      row.appendChild(hint);row.appendChild(mkInput());
+    }
+  });
+}
+function initEdits(){
+  document.querySelectorAll('[contenteditable="true"]').forEach(el=>el.addEventListener('input',scheduleSave));
+  document.querySelectorAll('.node-badge').forEach(el=>el.addEventListener('input',scheduleSave));
+}
+function scheduleSave(){
+  const b=document.getElementById('save-badge');b.textContent='Saving…';b.classList.remove('saved');
+  clearTimeout(saveTimer);saveTimer=setTimeout(doSave,700);
+}
+function doSave(){
+  try{
+    const d={__ct:customTags,__stack:myStack};
+    document.querySelectorAll('.auto-row[data-nid]').forEach(row=>{
+      d['r_'+row.dataset.nid]={
+        tags:[...row.querySelectorAll('.atag')].map(t=>({type:t.dataset.type,label:t.childNodes[0].textContent.trim()})),
+        cmd:row.querySelector('.cmd-input')?.value||''
+      };
+    });
+    document.querySelectorAll('[contenteditable="true"]').forEach((el,i)=>{d['ce_'+i]=el.innerHTML;});
+    document.querySelectorAll('.node-badge').forEach((el,i)=>{d['bd_'+i]=el.value;});
+    localStorage.setItem(SK,JSON.stringify(d));
+    const b=document.getElementById('save-badge');
+    b.textContent='All changes saved ✓';b.classList.add('saved');
+    setTimeout(()=>b.classList.remove('saved'),2800);
+  }catch(e){console.warn('save err',e);}
+}
+function doLoad(){
+  try{
+    const raw=localStorage.getItem(SK);if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.__ct){customTags=d.__ct;renderCustomTags();}
+    if(d.__stack){myStack=d.__stack;}
+    document.querySelectorAll('.auto-row[data-nid]').forEach(row=>{
+      const sv=d['r_'+row.dataset.nid];if(!sv)return;
+      row.querySelectorAll('.atag').forEach(t=>t.remove());
+      row.querySelector('.drop-hint')?.remove();
+      const oi=row.querySelector('.cmd-input');if(oi)oi.remove();
+      sv.tags.forEach(t=>addTagToRow(row,t.type,t.label));
+      const ci=row.querySelector('.cmd-input');
+      if(ci)ci.value=sv.cmd;else{const ni=mkInput();ni.value=sv.cmd;row.appendChild(ni);}
+    });
+    document.querySelectorAll('[contenteditable="true"]').forEach((el,i)=>{if(d['ce_'+i]!==undefined)el.innerHTML=d['ce_'+i];});
+    document.querySelectorAll('.node-badge').forEach((el,i)=>{if(d['bd_'+i])el.value=d['bd_'+i];});
+  }catch(e){console.warn('load err',e);}
+}
+function clearAll(){
+  if(!confirm('Reset all changes to defaults?'))return;
+  localStorage.removeItem(SK);location.reload();
+}
+
+/* ════════════════════════════════════════
+   PNG EXPORT
+════════════════════════════════════════ */
+async function exportPNG(){
+  const ov=document.getElementById('exp-ov');const bar=document.getElementById('exp-bar');const st=document.getElementById('exp-status');
+  ov.classList.add('show');bar.style.width='0%';st.textContent='Preparing…';
+  const panel=document.querySelector('.tab-panel.active');
+  const tabName=document.querySelector('.tab-btn.active')?.textContent?.trim()||'flow';
+  await new Promise(r=>setTimeout(r,80));bar.style.width='15%';
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;z-index:-1;width:1280px;padding:36px;background:#f0f6ff;font-family:Space Grotesk,sans-serif;';
+  const hdr=document.createElement('div');
+  hdr.style.cssText='font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#0f172a;margin-bottom:20px;';
+  hdr.textContent=tabName+' — Real Estate OS';
+  const clone=panel.cloneNode(true);
+  clone.style.cssText='display:block;max-height:none;overflow:visible;width:100%;';
+  clone.querySelectorAll('.flow-scroll,.stack-layout,.stack-left').forEach(s=>{s.style.maxHeight='none';s.style.overflow='visible';});
+  wrap.appendChild(hdr);wrap.appendChild(clone);document.body.appendChild(wrap);
+  bar.style.width='45%';st.textContent='Rendering…';
+  await new Promise(r=>setTimeout(r,180));
+  try{
+    const canvas=await html2canvas(wrap,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#f0f6ff',logging:false,width:1280,windowWidth:1280});
+    bar.style.width='88%';st.textContent='Encoding…';
+    await new Promise(r=>setTimeout(r,80));
+    const a=document.createElement('a');
+    a.download=`${tabName.toLowerCase().replace(/\s+/g,'-')}.png`;a.href=canvas.toDataURL('image/png');a.click();
+    bar.style.width='100%';st.textContent='Done ✓';
+  }catch(err){st.textContent='Error: '+err.message;}
+  document.body.removeChild(wrap);
+  setTimeout(()=>ov.classList.remove('show'),1800);
+}
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderTools();
+  initRows();
+  initEdits();
+  initDrag();
+  doLoad();
+  updateStack();
+});
+</script>
+</body>
+</html>
