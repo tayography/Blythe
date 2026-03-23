@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realancy — Investor Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&family=Syne:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #ffffff;
+    --offwhite: #f4f3ef;
+    --surface: rgba(255,255,255,0.75);
+    --border: rgba(255,255,255,0.92);
+    --border-inner: rgba(0,0,0,0.06);
+    --text: #0d0d0d;
+    --muted: #999;
+    --muted2: #c0bfbb;
+    --gold: #b8922e;
+    --gold-mid: #d4a83a;
+    --gold-light: #faf3e0;
+    --green: #1a8f52;
+    --green-light: #e8f7f0;
+    --blue: #1a5fd4;
+    --blue-light: #eaf1ff;
+    --shadow-card: 0 2px 0 rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.07), 0 24px 64px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+    --shadow-stat: 0 1px 0 rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.06), 0 16px 40px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1);
+    --shadow-input: 0 1px 4px rgba(0,0,0,0.08) inset, 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--offwhite);
+    background-image:
+      radial-gradient(ellipse 900px 600px at 15% 0%, rgba(184,146,46,0.09) 0%, transparent 65%),
+      radial-gradient(ellipse 700px 500px at 85% 100%, rgba(26,95,212,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 500px 400px at 50% 50%, rgba(255,255,255,0.5) 0%, transparent 70%);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 56px 24px 100px;
+  }
+
+  /* ---- HEADER ---- */
+  .header { text-align: center; margin-bottom: 64px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold-mid);
+    box-shadow: 0 0 0 2px rgba(184,146,46,0.2);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+    line-height: 1;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.05);
+  }
+  .logo em { color: var(--gold-mid); font-style: normal; }
+  .header-sub {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.2px;
+  }
+
+  /* ---- LAYOUT ---- */
+  .max { max-width: 980px; margin: 0 auto; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  .gap { margin-bottom: 36px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  /* ---- GLASS CARD ---- */
+  .card {
+    background: var(--surface);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: linear-gradient(150deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 55%);
+    pointer-events: none;
+  }
+  .card-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* ---- STAT CARDS ---- */
+  .stat {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 24px 20px;
+    box-shadow: var(--shadow-stat);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.1), 0 32px 72px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1);
+  }
+  .stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 20px 20px 0 0;
+  }
+  .stat.s-gold::before  { background: linear-gradient(90deg, #b8922e, #e8c96a); }
+  .stat.s-blue::before  { background: linear-gradient(90deg, #1a5fd4, #6699ff); }
+  .stat.s-green::before { background: linear-gradient(90deg, #1a8f52, #34c97a); }
+  .stat.s-dark::before  { background: linear-gradient(90deg, #222, #888); }
+  .stat-lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .stat-num.gold  { color: var(--gold); }
+  .stat-num.blue  { color: var(--blue); }
+  .stat-num.green { color: var(--green); }
+  .stat-num.dark  { color: var(--text); }
+  .stat-sub { font-size: 12px; color: var(--muted); font-weight: 300; }
+
+  /* ---- INPUTS ---- */
+  .irow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .irow:last-child { border-bottom: none; padding-bottom: 0; }
+  .irow:first-child { padding-top: 0; }
+  .ilabel { font-size: 13px; color: #555; }
+  .iright { display: flex; align-items: center; gap: 5px; }
+  .ipfx { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+
+  input[type="number"] {
+    background: #fafaf8;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 12px;
+    width: 110px;
+    text-align: right;
+    outline: none;
+    box-shadow: var(--shadow-input);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="number"]:focus {
+    border-color: var(--gold-mid);
+    box-shadow: 0 0 0 3px rgba(184,146,46,0.1), var(--shadow-input);
+  }
+
+  /* ---- RANGE ---- */
+  .range-group { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 145px;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--gold-mid) 0%, var(--gold-mid) var(--fill,100%), rgba(0,0,0,0.1) var(--fill,100%));
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 2.5px solid var(--gold-mid);
+    box-shadow: 0 2px 8px rgba(184,146,46,0.25), 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .rval {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 34px;
+    text-align: right;
+  }
+
+  /* ---- EQUITY BAR ---- */
+  .eq-track {
+    height: 12px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    gap: 2px;
+    margin: 16px 0 16px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.07);
+  }
+  .eq-seg {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.45s cubic-bezier(0.34,1.3,0.64,1);
+  }
+  .eq-legend { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #666; }
+  .leg-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  /* ---- TABLE ---- */
+  .tbl-outer {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-stat);
+    overflow: hidden;
+  }
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: rgba(0,0,0,0.015); border-bottom: 1px solid var(--border-inner); }
+  th {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 16px;
+    text-align: right;
+    font-weight: 400;
+  }
+  th:first-child { text-align: left; }
+  td {
+    padding: 12px 16px;
+    text-align: right;
+    border-bottom: 1px solid rgba(0,0,0,0.035);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: #555;
+  }
+  td:first-child {
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #888;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(0,0,0,0.012); }
+  tr.be-row td { background: var(--gold-light) !important; color: #7a5a10 !important; }
+  tr.be-row td:first-child { color: #7a5a10 !important; font-weight: 500; }
+
+  /* ---- BREAKEVEN BANNER ---- */
+  .be-banner {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow-stat);
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    overflow: hidden;
+    position: relative;
+  }
+  .be-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), #e8c050, var(--green), var(--blue));
+  }
+  .be-cell {
+    padding: 32px 28px 28px;
+    border-right: 1px solid var(--border-inner);
+  }
+  .be-cell:last-child { border-right: none; }
+  .be-lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .be-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .be-sub { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.5; }
+
+  @media (max-width: 720px) {
+    .grid2,.grid3,.grid4 { grid-template-columns: 1fr 1fr; }
+    .be-banner { grid-template-columns: 1fr 1fr; }
+    .be-cell { border-right: none; border-bottom: 1px solid var(--border-inner); }
+    .be-cell:nth-child(even) { border-left: 1px solid var(--border-inner); }
+    .be-cell:last-child,.be-cell:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+    .logo { font-size: 54px; }
+  }
+  @media (max-width: 480px) {
+    .grid2,.grid3,.grid4 { grid-template-columns: 1fr; }
+    .be-banner { grid-template-columns: 1fr; }
+    .be-cell:nth-child(even) { border-left: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge"><span class="badge-dot"></span>Founding Partner — Confidential</div>
+  <div class="logo">REALANCY</div>
+  <div class="header-sub">Interactive investment overview &nbsp;·&nbsp; Every number below is editable</div>
+</div>
+
+<div class="max">
+
+  <!-- CONFIGURE -->
+  <div class="section-label gap">Configure</div>
+  <div class="grid2 gap">
+    <div class="card">
+      <div class="card-label">Platform Pricing</div>
+      <div class="irow">
+        <span class="ilabel">Brokerage / month</span>
+        <div class="iright"><span class="ipfx">$</span><input type="number" id="bPrice" value="1249" onchange="calc()"></div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Individual Agent / month</span>
+        <div class="iright"><span class="ipfx">$</span><input type="number" id="aPrice" value="499" onchange="calc()"></div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Brokerages added / month</span>
+        <div class="iright"><input type="number" id="bGrow" value="1" onchange="calc()"></div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Agents added / month</span>
+        <div class="iright"><input type="number" id="aGrow" value="5" onchange="calc()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Your Investment</div>
+      <div class="irow">
+        <span class="ilabel">Founding equity (free)</span>
+        <div class="iright"><span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#666">5%</span></div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Equity purchased</span>
+        <div class="range-group">
+          <input type="range" id="buyEq" min="0" max="20" value="20" oninput="onSlide()">
+          <span class="rval" id="buyEqVal">20%</span>
+        </div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Cost per 1%</span>
+        <div class="iright"><span class="ipfx">$</span><input type="number" id="cpp" value="1250" onchange="calc()"></div>
+      </div>
+      <div class="irow">
+        <span class="ilabel">Software build fee</span>
+        <div class="iright"><span class="ipfx">$</span><input type="number" id="build" value="12000" onchange="calc()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-label gap">Snapshot</div>
+  <div class="grid4 gap">
+    <div class="stat s-gold">
+      <div class="stat-lbl">Total Investment</div>
+      <div class="stat-num gold" id="sInvest">—</div>
+      <div class="stat-sub">Software + equity</div>
+    </div>
+    <div class="stat s-blue">
+      <div class="stat-lbl">Your Equity</div>
+      <div class="stat-num blue" id="sEq">—</div>
+      <div class="stat-sub" id="sEqSub">5% free + 20% purchased</div>
+    </div>
+    <div class="stat s-green">
+      <div class="stat-lbl">Month 12 Revenue</div>
+      <div class="stat-num green" id="sRev">—</div>
+      <div class="stat-sub">Platform total</div>
+    </div>
+    <div class="stat s-dark">
+      <div class="stat-lbl">Your Monthly Passive</div>
+      <div class="stat-num dark" id="sCut">—</div>
+      <div class="stat-sub">At month 12</div>
+    </div>
+  </div>
+
+  <!-- EQUITY -->
+  <div class="section-label gap">Ownership Structure</div>
+  <div class="card gap">
+    <div class="card-label">Cap Table</div>
+    <div class="eq-track">
+      <div class="eq-seg" id="tecBar" style="background:linear-gradient(90deg,#111,#555)"></div>
+      <div class="eq-seg" id="blyBar" style="background:linear-gradient(90deg,var(--gold),#e8c96a)"></div>
+    </div>
+    <div class="eq-legend">
+      <div class="leg"><div class="leg-dot" style="background:#222"></div><span id="tecLeg">TEC — 70%</span></div>
+      <div class="leg"><div class="leg-dot" style="background:var(--gold-mid)"></div><span id="blyLeg">Blythe — 30%</span></div>
+      <div class="leg" style="margin-left:auto"><span style="font-size:11px;color:var(--muted2)">Developer equity handled internally within TEC</span></div>
+    </div>
+  </div>
+
+  <!-- COST BREAKDOWN -->
+  <div class="section-label gap">Investment Allocation</div>
+  <div class="card gap">
+    <div class="card-label">Where Your Money Goes — 3-Month Build to Deployment</div>
+    <div style="margin-bottom:20px">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:12px">Fixed Costs (off the top)</div>
+      <div class="irow">
+        <span class="ilabel">Attorney — Business structuring &amp; agreements</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)">$1,500</span>
+      </div>
+      <div class="irow" style="border-bottom:none">
+        <span class="ilabel">Infrastructure, Servers, AI Tokens, Domain &amp; Security <span style="color:var(--muted);font-size:12px">(3 mo. x $600)</span></span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)">$1,800</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;border-top:1px solid rgba(0,0,0,0.06);margin-top:8px">
+        <span style="font-size:12px;color:var(--muted)">Total fixed</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)">$3,300</span>
+      </div>
+    </div>
+    <div style="height:1px;background:rgba(0,0,0,0.06);margin-bottom:20px"></div>
+    <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px">Remaining Balance — Scales with your equity purchase</div>
+    <div id="allocRows"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid rgba(0,0,0,0.06);margin-top:4px">
+      <span style="font-size:12px;color:var(--muted)">Remaining after fixed costs</span>
+      <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)" id="remainAmt">—</span>
+    </div>
+    <div style="margin-top:20px">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:10px">Allocation Visual</div>
+      <div style="height:14px;border-radius:7px;overflow:hidden;display:flex;gap:2px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.07)">
+        <div id="aBar1" style="height:100%;background:linear-gradient(90deg,#1a5fd4,#6699ff);border-radius:4px;transition:width 0.4s ease;width:50%"></div>
+        <div id="aBar2" style="height:100%;background:linear-gradient(90deg,#1a8f52,#34c97a);border-radius:4px;transition:width 0.4s ease;width:25%"></div>
+        <div id="aBar3" style="height:100%;background:linear-gradient(90deg,#b8922e,#e8c96a);border-radius:4px;transition:width 0.4s ease;width:10%"></div>
+        <div id="aBar4" style="height:100%;background:linear-gradient(90deg,#555,#999);border-radius:4px;transition:width 0.4s ease;width:15%"></div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+        <div class="leg"><div class="leg-dot" style="background:#1a5fd4"></div><span>Dev Cost 50%</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#1a8f52"></div><span>Marketing &amp; Ads 25%</span></div>
+        <div class="leg"><div class="leg-dot" style="background:var(--gold-mid)"></div><span>Overage Fund 10%</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#777"></div><span>Hardware 15%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-label gap">12-Month Projection</div>
+  <div class="tbl-outer gap">
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Brokerages</th>
+            <th>Agents</th>
+            <th>Monthly Revenue</th>
+            <th>Cumulative Revenue</th>
+            <th>Your Cut (mo.)</th>
+            <th>Your Cumulative</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BREAKEVEN -->
+  <div class="section-label gap">Break-Even Analysis</div>
+  <div class="be-banner gap">
+    <div class="be-cell">
+      <div class="be-lbl">Break-Even Month</div>
+      <div class="be-num" id="beM" style="color:var(--gold)">—</div>
+      <div class="be-sub" id="beSub">Based on current inputs</div>
+    </div>
+    <div class="be-cell">
+      <div class="be-lbl">Total Invested</div>
+      <div class="be-num" id="beInv" style="color:var(--blue)">—</div>
+      <div class="be-sub">Build fee + equity buy-in</div>
+    </div>
+    <div class="be-cell">
+      <div class="be-lbl">Your Return — Year 1</div>
+      <div class="be-num" id="beRet" style="color:var(--green)">—</div>
+      <div class="be-sub">Cumulative equity share</div>
+    </div>
+    <div class="be-cell">
+      <div class="be-lbl">Monthly Passive (Mo. 12)</div>
+      <div class="be-num" id="bePas" style="color:var(--text)">—</div>
+      <div class="be-sub">At current growth rate</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function fmt(n){ return '$'+Math.round(n).toLocaleString(); }
+
+function onSlide(){
+  const v = +document.getElementById('buyEq').value;
+  document.getElementById('buyEqVal').textContent = v+'%';
+  const pct = (v/20)*100;
+  document.getElementById('buyEq').style.setProperty('--fill', pct+'%');
+  calc();
+}
+
+function calc(){
+  const bp   = +document.getElementById('bPrice').value||0;
+  const ap   = +document.getElementById('aPrice').value||0;
+  const bg   = +document.getElementById('bGrow').value||0;
+  const ag   = +document.getElementById('aGrow').value||0;
+  const beq  = +document.getElementById('buyEq').value||0;
+  const cpp  = +document.getElementById('cpp').value||1000;
+  const bld  = +document.getElementById('build').value||12000;
+
+  const feq      = 5;
+  const teq      = feq + beq;
+  const eInvest  = beq * cpp;
+  const total    = bld + eInvest;
+  const tecPct   = 100 - teq;
+
+  // Stats
+  document.getElementById('sInvest').textContent = fmt(total);
+  document.getElementById('sEq').textContent     = teq+'%';
+  document.getElementById('sEqSub').textContent  = feq+'% free + '+beq+'% purchased';
+
+  // Equity bar
+  document.getElementById('tecBar').style.width = tecPct+'%';
+  document.getElementById('blyBar').style.width = teq+'%';
+  document.getElementById('tecLeg').textContent = 'TEC — '+tecPct+'%';
+  document.getElementById('blyLeg').textContent = 'Blythe — '+teq+'% ('+feq+'% founding + '+beq+'% purchased)';
+
+  // Table
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  let cumR=0, cumB=0, beM=null, m12R=0, m12C=0;
+
+  for(let m=1;m<=12;m++){
+    const br  = m*bg;
+    const ar  = m*ag;
+    const mr  = br*bp + ar*ap;
+    cumR += mr;
+    const bc  = mr*(teq/100);
+    cumB += bc;
+    if(!beM && cumB>=total) beM=m;
+    if(m===12){ m12R=mr; m12C=bc; }
+
+    const tr = document.createElement('tr');
+    if(beM===m) tr.classList.add('be-row');
+    tr.innerHTML=`
+      <td>Month ${m}${beM===m?' &nbsp;★ Break-even':''}</td>
+      <td>${br}</td><td>${ar}</td>
+      <td>${fmt(mr)}</td><td>${fmt(cumR)}</td>
+      <td>${fmt(bc)}</td><td>${fmt(cumB)}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('sRev').textContent = fmt(m12R);
+  document.getElementById('sCut').textContent = fmt(m12C);
+
+  // Allocation breakdown
+  const fixed    = 3300;
+  const remain   = Math.max(0, eInvest - fixed);
+  const alloc    = [
+    { label:'Development Cost',        pct:50,  color:'#1a5fd4' },
+    { label:'Marketing & Advertising', pct:25,  color:'#1a8f52' },
+    { label:'Overage / Emergency Fund',pct:10,  color:'#b8922e' },
+    { label:'Hardware',                pct:15,  color:'#777'    },
+  ];
+  document.getElementById('remainAmt').textContent = fmt(remain);
+  const rows = document.getElementById('allocRows');
+  rows.innerHTML = '';
+  alloc.forEach((a,i) => {
+    const amt = remain * (a.pct/100);
+    const row = document.createElement('div');
+    row.className = 'irow';
+    if(i===alloc.length-1) row.style.borderBottom='none';
+    row.innerHTML = `
+      <span class="ilabel" style="display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:2px;background:${a.color};flex-shrink:0;display:inline-block"></span>
+        ${a.label} <span style="color:var(--muted2);font-size:11px">(${a.pct}%)</span>
+      </span>
+      <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)">${fmt(amt)}</span>`;
+    rows.appendChild(row);
+  });
+
+  document.getElementById('beM').textContent   = beM ? 'Month '+beM : '> Mo. 12';
+  document.getElementById('beSub').textContent = beM
+    ? 'Full $'+total.toLocaleString()+' recovered'
+    : 'Adjust growth or equity % for earlier break-even';
+  document.getElementById('beInv').textContent = fmt(total);
+  document.getElementById('beRet').textContent = fmt(cumB);
+  document.getElementById('bePas').textContent = fmt(m12C);
+}
+
+document.getElementById('buyEq').style.setProperty('--fill','100%');
+calc();
+</script>
+</body>
+</html>
